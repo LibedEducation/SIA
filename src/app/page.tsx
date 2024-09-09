@@ -1,9 +1,22 @@
-import React from 'react';
+"use client";
+import React, { useEffect } from 'react';
 import Head from 'next/head';
+import { useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Navbar from './components/NavBar';
 
 const Home = () => {
+  const { isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to dashboard if user is signed in
+    if (isLoaded && isSignedIn) {
+      router.push('/dashboard');
+    }
+  }, [isLoaded, isSignedIn, router]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-800 via-pink-700 to-red-500 text-white font-inter">
       <Navbar />
@@ -26,7 +39,6 @@ const Home = () => {
           </button>
         </div>
       </section>
-
 
       {/* Interactive How It Works Section */}
       <section id="how-it-works" className="py-20 bg-gray-900">
