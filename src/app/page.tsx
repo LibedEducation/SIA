@@ -11,7 +11,6 @@ const Home = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to dashboard if user is signed in
     if (isLoaded && isSignedIn) {
       router.push('/dashboard');
     }

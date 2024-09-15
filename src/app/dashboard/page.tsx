@@ -1,142 +1,95 @@
+// components/Dashboard.tsx
 "use client";
-import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
-import { SignedIn, SignedOut, UserButton, useUser, useAuth } from '@clerk/nextjs';
-import { FaChartPie, FaUsers, FaCog, FaBars, FaSignOutAlt } from 'react-icons/fa';
+import { useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
+// import { Calendar } from "react-calendar";
+import { enUS } from "date-fns/locale";
+import 'react-calendar/dist/Calendar.css'; // Import calendar styles
+import { supabase } from "../lib/supabaseClient";
 
-const Dashboard: React.FC = () => {
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const router = useRouter();
-  const { signOut } = useAuth();
+
+export default function Dashboard() {
   const { user } = useUser();
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/');
-    }
-  }, [user, router]);
-
   return (
-    <SignedIn>
-      <div className="flex h-screen bg-gray-100">
-        {/* Sidebar */}
-        <aside
-          className={`bg-blue-900 text-white w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform ${
-            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } md:relative md:translate-x-0 transition duration-200 ease-in-out`}
-        >
-          <div className="flex items-center justify-between px-4">
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <button
-              className="text-white md:hidden"
-              onClick={() => setSidebarOpen(!isSidebarOpen)}
-            >
-              <FaBars />
-            </button>
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Navigation Bar */}
+      <nav className="bg-white shadow p-4 flex justify-between">
+        <h1 className="text-xl font-bold">Personal Learning App</h1>
+        <div className="flex items-center">
+          <Image
+            src={user?.imageUrl || "/default-avatar.png"}
+            alt="Profile"
+            className="w-10 h-10 rounded-full mr-2"
+            width={40}
+            height={40}
+          />
+          <div>
+            <p className="text-sm">{user?.firstName} {user?.lastName}</p>
+            <p className="text-xs text-gray-600">{user?.primaryEmailAddress?.emailAddress}</p>
           </div>
-          <nav>
-            <a
-              href="#"
-              className="block py-2.5 px-4 rounded transition duration-200 hover:bg-blue-800 hover:text-white"
-            >
-              <FaChartPie /> Dashboard
-            </a>
-            <a
-              href="#"
-              className="block py-2.5 px-4 rounded transition duration-200 hover:bg-blue-800 hover:text-white"
-            >
-              <FaUsers /> Users
-            </a>
-            <a
-              href="#"
-              className="block py-2.5 px-4 rounded transition duration-200 hover:bg-blue-800 hover:text-white"
-            >
-              <FaCog /> Settings
-            </a>
-            <button
-              onClick={() => signOut()}
-              className="block py-2.5 px-4 rounded transition duration-200 hover:bg-blue-800 hover:text-white w-full text-left"
-            >
-              <FaSignOutAlt /> Logout
-            </button>
-          </nav>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="flex flex-grow p-6">
+        {/* Right Section - Calendar and Today's Activity */}
+        <aside className="w-1/4 bg-white p-4 shadow-md rounded-lg">
+          {/* Calendar */}
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold mb-2">Calendar</h2>
+            {/*<Calendar/>*/}
+          </div>
+          
+          {/* Today's Activity */}
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Today&apos;s Activity</h2>
+            <ul className="text-sm list-disc list-inside">
+              <li>Completed JavaScript lesson</li>
+              <li>Python course: 50% progress</li>
+              {/* Dynamically generate these based on activity */}
+            </ul>
+          </div>
         </aside>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          <header className="bg-white shadow-md p-4 flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <button
-                className="text-gray-700 md:hidden"
-                onClick={() => setSidebarOpen(!isSidebarOpen)}
-              >
-                <FaBars />
-              </button>
-              <h2 className="text-xl font-semibold">Welcome Back!</h2>
-            </div>
-            <div className="flex items-center space-x-4">
-              {user && (
-                <>
-                  <span className="text-gray-700">{user.fullName || user.username}</span>
-                  <UserButton />
-                </>
-              )}
-            </div>
-          </header>
-
-          <main className="flex-1 overflow-y-auto p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-              {/* Statistics Cards */}
-              <div className="bg-white shadow-md rounded-lg p-6">
-                <h3 className="text-xl font-semibold">Total Users</h3>
-                <p className="text-gray-600 mt-2">1,234</p>
-              </div>
-              <div className="bg-white shadow-md rounded-lg p-6">
-                <h3 className="text-xl font-semibold">Active Users</h3>
-                <p className="text-gray-600 mt-2">567</p>
-              </div>
-              <div className="bg-white shadow-md rounded-lg p-6">
-                <h3 className="text-xl font-semibold">New Signups</h3>
-                <p className="text-gray-600 mt-2">89</p>
-              </div>
+        {/* Main Section */}
+        <main className="flex-grow ml-6">
+          <div className="grid grid-cols-2 gap-4">
+            {/* Square box with plus symbol */}
+            <div className="bg-white shadow-md rounded-lg flex items-center justify-center h-40 hover:shadow-lg cursor-pointer">
+              <span className="text-4xl text-gray-400">+</span>
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-white shadow-md rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-4">Recent Activity</h3>
-              <ul>
-                <li className="flex justify-between items-center py-2">
-                  <p>User John added a new post.</p>
-                  <span className="text-gray-600">2 hours ago</span>
-                </li>
-                <li className="flex justify-between items-center py-2">
-                  <p>User Jane signed up.</p>
-                  <span className="text-gray-600">4 hours ago</span>
-                </li>
-                <li className="flex justify-between items-center py-2">
-                  <p>User Mike updated his profile.</p>
-                  <span className="text-gray-600">6 hours ago</span>
-                </li>
-              </ul>
+            {/* Python progress box */}
+            <div className="bg-white shadow-md rounded-lg p-4 relative h-40 hover:shadow-lg cursor-pointer">
+              <h2 className="text-lg font-semibold">Python</h2>
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-gray-300 h-2 rounded-full">
+                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: "50%" }}></div>
+                </div>
+                <p className="text-xs text-gray-600 mt-1">50% complete</p>
+              </div>
             </div>
-          </main>
+          </div>
 
-          {/* Footer */}
-          <footer className="bg-white shadow-md p-4 flex justify-between items-center">
-            <p className="text-gray-600">© 2024 Your Company</p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-600 hover:text-gray-800">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-gray-600 hover:text-gray-800">
-                Terms of Service
-              </a>
+          {/* Additional sections for other learning modules */}
+          <div className="mt-8">
+            <h2 className="text-lg font-semibold mb-4">Learning Modules</h2>
+            <div className="grid grid-cols-3 gap-4">
+              {/* Add more square boxes or learning progress sections as needed */}
+              <div className="bg-white shadow-md rounded-lg p-4 h-40 flex items-center justify-center">
+                <p className="text-gray-600">JavaScript</p>
+              </div>
+              <div className="bg-white shadow-md rounded-lg p-4 h-40 flex items-center justify-center">
+                <p className="text-gray-600">React</p>
+              </div>
+              <div className="bg-white shadow-md rounded-lg p-4 h-40 flex items-center justify-center">
+                <p className="text-gray-600">Data Structures</p>
+              </div>
             </div>
-          </footer>
-        </div>
+          </div>
+        </main>
       </div>
-    </SignedIn>
+    </div>
   );
-};
-
-export default Dashboard;
+}
